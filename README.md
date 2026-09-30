@@ -203,3 +203,18 @@ No elimines `.env`: contiene la configuración local de la API key.
 ## Seguridad y despliegue
 
 `python app.py` inicia el servidor de desarrollo de Flask, adecuado para ejecutar y probar el proyecto localmente. No debe utilizarse como servidor de producción. Mantén la API key en `.env` y no la incluyas en capturas, mensajes ni repositorios públicos.
+
+### Desplegar en Render
+
+El repositorio incluye `render.yaml`. Al crear un Blueprint en Render y conectar este repositorio, Render instalará las dependencias con `pip install -r requirements.txt` y arrancará Flask con Gunicorn en el puerto que Render asigne.
+
+Configura `GROQ_API_KEY` en el panel del servicio de Render como variable secreta. No la escribas en `render.yaml` ni la subas al repositorio. `GROQ_MODEL` y `EMBEDDING_MODEL` ya tienen valores predeterminados en la configuración del Blueprint y se pueden cambiar desde el panel si es necesario.
+
+Si configuras el servicio manualmente en lugar de usar el Blueprint:
+
+- **Runtime:** Python 3
+- **Build Command:** `pip install -r requirements.txt`
+- **Start Command:** `gunicorn app:app --bind 0.0.0.0:$PORT --timeout 180`
+- **Environment Variable:** `GROQ_API_KEY`, con la clave creada en Groq Console
+
+Los PDF deben estar incluidos en el repositorio dentro de `documents/` para que Render los pueda indexar. Render puede eliminar archivos generados locales al reiniciar o volver a desplegar; en ese caso la aplicación volverá a crear `chroma/` al procesar una consulta, por lo que necesitará descargar otra vez el modelo de embeddings. El servidor de desarrollo `python app.py` se reserva para uso local.
